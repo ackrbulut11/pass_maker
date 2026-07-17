@@ -94,7 +94,212 @@ function generatePin(length) {
 /**
  * Reads UI state, generates the password/PIN, and displays it in the DOM.
  */
-function generateAndDisplay() {
+let localHistory = [];
+const HISTORY_EXPIRY_MS = 180000; // 3 minutes
+
+/**
+ * Loads history from chrome.storage.local.
+ */
+function loadHistory(callback) {
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(['passwordHistory'], (result) => {
+      localHistory = result.passwordHistory || [];
+      callback(localHistory);
+    });
+  } else {
+    callback(localHistory);
+  }
+}
+
+/**
+ * Saves localHistory to chrome.storage.local.
+ */
+function saveHistory() {
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.set({ passwordHistory: localHistory });
+  }
+}
+
+/**
+ * Adds a generated password to the history list (caps at 5 items).
+ * @param {string} password
+ */
+function addToHistory(password) {
+  // Silent prune first
+  pruneExpiredHistory(true);
+
+  // Avoid duplicate consecutive additions
+  if (localHistory.length > 0 && localHistory[0].password === password) {
+    return;
+  }
+
+  localHistory.unshift({
+    password: password,
+    timestamp: Date.now()
+  });
+
+  if (localHistory.length > 5) {
+    localHistory.pop();
+  }
+
+  saveHistory();
+  renderHistory();
+}
+
+/**
+ * Clears the stored password history.
+ */
+function clearHistory() {
+  localHistory = [];
+  saveHistory();
+  renderHistory();
+}
+
+/**
+ * Prunes expired items (older than 3 minutes) from localHistory.
+ * @param {boolean} [silent=false] If true, skip re-rendering.
+ */
+function pruneExpiredHistory(silent = false) {
+  const now = Date.now();
+  const originalLength = localHistory.length;
+
+  localHistory = localHistory.filter(item => (now - item.timestamp) < HISTORY_EXPIRY_MS);
+
+  if (localHistory.length !== originalLength) {
+    saveHistory();
+    if (!silent) {
+      renderHistory();
+    }
+  } else if (!silent) {
+    // Re-render anyway to refresh the relative time text (e.g. "Just now" to "1m ago")
+    renderHistory();
+  }
+}
+
+/**
+ * Helper to mask passwords for security (e.g. pa••••12 or •••• for short strings).
+ * @param {string} pwd
+ * @returns {string}
+ */
+function maskPassword(pwd) {
+  if (pwd.length <= 4) {
+    return '••••';
+  }
+  return pwd.substring(0, 2) + '••••' + pwd.substring(pwd.length - 2);
+}
+
+/**
+ * Formats timestamps to friendly relative time labels.
+ * @param {number} timestamp
+ * @returns {string}
+ */
+function getRelativeTime(timestamp) {
+  const diffMs = Date.now() - timestamp;
+  const diffSec = Math.max(0, Math.floor(diffMs / 1000));
+  if (diffSec < 15) return 'Just now';
+  if (diffSec < 60) return `${diffSec}s ago`;
+  const diffMin = Math.floor(diffSec / 60);
+  return `${diffMin}m ago`;
+}
+
+/**
+ * Dynamically renders the password history items in the UI.
+ */
+function renderHistory() {
+  const historyList = document.getElementById('history-list');
+  if (!historyList) return;
+
+  historyList.innerHTML = '';
+
+  if (localHistory.length === 0) {
+    const emptyDiv = document.createElement('div');
+    emptyDiv.className = 'history-empty';
+    emptyDiv.textContent = 'No recent passwords';
+    historyList.appendChild(emptyDiv);
+    return;
+  }
+
+  localHistory.forEach((item) => {
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'history-item';
+
+    // Left Container: Password & Time label
+    const leftDiv = document.createElement('div');
+    leftDiv.className = 'history-item-left';
+
+    const pwdSpan = document.createElement('span');
+    pwdSpan.className = 'history-pwd';
+    pwdSpan.textContent = maskPassword(item.password);
+    pwdSpan.dataset.revealed = 'false';
+
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'history-time';
+    timeSpan.textContent = getRelativeTime(item.timestamp);
+
+    leftDiv.appendChild(pwdSpan);
+    leftDiv.appendChild(timeSpan);
+
+    // Right Container: Action icon buttons
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'history-actions';
+
+    // Reveal toggle (Eye) button
+    const btnEye = document.createElement('button');
+    btnEye.className = 'btn-action-sm';
+    btnEye.title = 'Reveal password';
+    btnEye.ariaLabel = 'Reveal password';
+    btnEye.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="action-icon-sm"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+
+    btnEye.addEventListener('click', () => {
+      const isRevealed = pwdSpan.dataset.revealed === 'true';
+      if (isRevealed) {
+        pwdSpan.textContent = maskPassword(item.password);
+        pwdSpan.dataset.revealed = 'false';
+        btnEye.title = 'Reveal password';
+        btnEye.ariaLabel = 'Reveal password';
+        btnEye.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="action-icon-sm"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      } else {
+        pwdSpan.textContent = item.password;
+        pwdSpan.dataset.revealed = 'true';
+        btnEye.title = 'Hide password';
+        btnEye.ariaLabel = 'Hide password';
+        btnEye.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="action-icon-sm"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+      }
+    });
+
+    // Copy button
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'btn-action-sm';
+    btnCopy.title = 'Copy password';
+    btnCopy.ariaLabel = 'Copy password';
+    btnCopy.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="action-icon-sm"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+
+    btnCopy.addEventListener('click', () => {
+      navigator.clipboard.writeText(item.password)
+        .then(() => {
+          btnCopy.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="action-icon-sm"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+          setTimeout(() => {
+            btnCopy.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="action-icon-sm"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+          }, 1500);
+        })
+        .catch(err => console.error("Failed to copy history item:", err));
+    });
+
+    actionsDiv.appendChild(btnEye);
+    actionsDiv.appendChild(btnCopy);
+
+    itemDiv.appendChild(leftDiv);
+    itemDiv.appendChild(actionsDiv);
+
+    historyList.appendChild(itemDiv);
+  });
+}
+
+/**
+ * Reads UI state, generates the password/PIN, and displays it in the DOM.
+ * @param {boolean} [skipHistory=false]
+ */
+function generateAndDisplay(skipHistory = false) {
   const slider = document.getElementById('length-slider');
   const toggleNumbers = document.getElementById('toggle-numbers');
   const toggleSymbols = document.getElementById('toggle-symbols');
@@ -111,6 +316,10 @@ function generateAndDisplay() {
   }
 
   display.textContent = result;
+
+  if (!skipHistory && result && result !== 'Generating...') {
+    addToHistory(result);
+  }
 }
 
 /**
@@ -133,8 +342,9 @@ function syncSliderAndInput(value) {
  * Switched between Random and PIN password generation modes.
  * @param {'random'|'pin'} type
  * @param {boolean} [skipSave=false]
+ * @param {boolean} [skipHistory=false]
  */
-function switchPasswordType(type, skipSave = false) {
+function switchPasswordType(type, skipSave = false, skipHistory = false) {
   const tabRandom = document.getElementById('tab-random');
   const tabPin = document.getElementById('tab-pin');
   const optionsContainer = document.getElementById('options-container');
@@ -172,7 +382,7 @@ function switchPasswordType(type, skipSave = false) {
   }
 
   syncSliderAndInput(currentVal);
-  generateAndDisplay();
+  generateAndDisplay(skipHistory);
   if (!skipSave) {
     saveState();
   }
@@ -260,13 +470,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggleSymbols = document.getElementById('toggle-symbols');
   const btnCopy = document.getElementById('btn-copy');
   const btnRefresh = document.getElementById('btn-refresh');
+  const btnClearHistory = document.getElementById('btn-clear-history');
 
-  // Load state and trigger initial generation
+  // Load configuration, load history, and trigger initial setup
   loadState((state) => {
     syncSliderAndInput(state.length);
     toggleNumbers.checked = state.numbers;
     toggleSymbols.checked = state.symbols;
-    switchPasswordType(state.mode, true);
+    
+    loadHistory(() => {
+      pruneExpiredHistory(true); // Silent prune expired on startup
+      renderHistory();
+      switchPasswordType(state.mode, true, true); // skipHistory = true on startup load
+    });
   });
 
   // Event bindings
@@ -313,5 +529,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnCopy.addEventListener('click', copyToClipboard);
-  btnRefresh.addEventListener('click', generateAndDisplay);
+  btnRefresh.addEventListener('click', () => generateAndDisplay(false)); // Force history log on refresh click
+  
+  if (btnClearHistory) {
+    btnClearHistory.addEventListener('click', clearHistory);
+  }
+
+  // Auto-prune expired history and refresh time labels every 15 seconds
+  setInterval(() => {
+    pruneExpiredHistory(false);
+  }, 15000);
 });

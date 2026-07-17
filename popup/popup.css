@@ -332,3 +332,121 @@ body {
 .btn-secondary:hover {
   background-color: var(--color-primary-light);
 }
+
+/* Recent History Section Styling */
+.history-header-wrapper {
+  margin-top: 12px;
+}
+
+.history-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-icon-only {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.btn-icon-only:hover {
+  color: #ef4444; /* red-500 danger color for clear all */
+  background-color: #fef2f2;
+}
+
+.trash-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.history-empty {
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  padding: 16px 0;
+  font-style: italic;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: var(--color-surface-grey);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.history-item:hover {
+  border-color: var(--color-border-hover);
+  background-color: #f1f5f9;
+}
+
+.history-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.history-pwd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  word-break: break-all;
+  user-select: text;
+}
+
+.history-time {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-action-sm {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.btn-action-sm:hover {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.action-icon-sm {
+  width: 13px;
+  height: 13px;
+}

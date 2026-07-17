@@ -322,6 +322,75 @@ function generateAndDisplay() {
   }
 
   display.textContent = result;
+
+  // Calculate and update password strength indicator
+  updatePasswordStrength(result, isRandomActive);
+}
+
+/**
+ * Calculates entropy and updates the strength bar UI dynamically.
+ * @param {string} password
+ * @param {boolean} isRandomActive
+ */
+function updatePasswordStrength(password, isRandomActive) {
+  const bar = document.getElementById('strength-bar');
+  const status = document.getElementById('strength-status');
+  if (!bar || !status) return;
+
+  if (!password || password === 'Generating...') {
+    bar.style.width = '0%';
+    bar.style.backgroundColor = '#cbd5e1';
+    status.textContent = '-';
+    status.style.color = 'var(--color-text-muted)';
+    return;
+  }
+
+  let poolSize = 0;
+  if (!isRandomActive) {
+    // PIN mode
+    poolSize = 10;
+  } else {
+    // Random mode: find pool size based on character variety
+    const hasLower = [...password].some(c => CHARS.lower.includes(c));
+    const hasUpper = [...password].some(c => CHARS.upper.includes(c));
+    const toggleNumbers = document.getElementById('toggle-numbers');
+    const toggleSymbols = document.getElementById('toggle-symbols');
+
+    if (hasLower) poolSize += CHARS.lower.length;
+    if (hasUpper) poolSize += CHARS.upper.length;
+    if (toggleNumbers && toggleNumbers.checked) poolSize += CHARS.numbers.length;
+    if (toggleSymbols && toggleSymbols.checked) poolSize += CHARS.symbols.length;
+    
+    if (poolSize === 0) poolSize = 52; // Fallback to basic letters
+  }
+
+  const length = password.length;
+  const entropy = length * Math.log2(poolSize);
+
+  // Map entropy to percentage (maxing out at 120 bits = 100%)
+  const percentage = Math.min(100, Math.max(5, Math.floor((entropy / 120) * 100)));
+  bar.style.width = `${percentage}%`;
+
+  let label = '';
+  let color = '';
+
+  if (entropy < 60) {
+    label = 'Weak';
+    color = '#ef4444'; // Red
+  } else if (entropy < 80) {
+    label = 'Medium';
+    color = '#f97316'; // Orange
+  } else if (entropy < 110) {
+    label = 'Strong';
+    color = '#2563eb'; // Blue
+  } else {
+    label = 'Very Strong';
+    color = '#22c55e'; // Green
+  }
+
+  status.textContent = label;
+  status.style.color = color;
+  bar.style.backgroundColor = color;
 }
 
 /**

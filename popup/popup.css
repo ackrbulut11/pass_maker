@@ -53,7 +53,7 @@
   padding: 0;
 }
 
-body {
+html, body {
   width: 380px;
   font-family: var(--font-family);
   background-color: var(--color-bg);
@@ -61,13 +61,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 .card {
-  padding: 20px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 /* Titles and separators */
@@ -300,8 +302,8 @@ body {
 
 .password-display {
   width: 100%;
-  min-height: 52px;
-  padding: 14px 18px;
+  min-height: 44px;
+  padding: 10px 14px;
   background-color: var(--color-surface-grey);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -328,7 +330,7 @@ body {
 
 .btn {
   flex: 1;
-  height: 42px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -138,7 +138,7 @@ function addToHistory(password) {
     timestamp: Date.now()
   });
 
-  if (localHistory.length > 5) {
+  if (localHistory.length > 3) {
     localHistory.pop();
   }
 

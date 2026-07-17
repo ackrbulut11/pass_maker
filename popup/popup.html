@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>pass_maker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="card">
+    <!-- Header / Type section -->
+    <div class="section-title-label">Choose password type</div>
+    <div class="segmented-control" role="tablist">
+      <button id="tab-random" class="tab-btn active" role="tab" aria-selected="true" aria-label="Random Password Mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+        Random
+      </button>
+      <button id="tab-pin" class="tab-btn" role="tab" aria-selected="false" aria-label="PIN Code Mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+        PIN
+      </button>
+    </div>
+
+    <!-- Customization Section -->
+    <div class="section-header">
+      <div class="section-title-label">Customize your new password</div>
+      <hr class="separator">
+    </div>
+
+    <!-- Length Selection -->
+    <div class="setting-row">
+      <span class="setting-label">Characters</span>
+      <div class="slider-control-group">
+        <input type="range" id="length-slider" min="8" max="32" value="24" class="range-slider" aria-label="Password Length Slider">
+        <input type="number" id="length-input" min="8" max="32" value="24" class="number-input" aria-label="Password Length Input">
+      </div>
+    </div>
+
+    <!-- Toggles (Hidden/Disabled in PIN mode) -->
+    <div id="options-container" class="options-container">
+      <div class="setting-row">
+        <span class="setting-label">Numbers</span>
+        <label class="switch" for="toggle-numbers">
+          <input type="checkbox" id="toggle-numbers" checked>
+          <span class="slider-round"></span>
+        </label>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Symbols</span>
+        <label class="switch" for="toggle-symbols">
+          <input type="checkbox" id="toggle-symbols" checked>
+          <span class="slider-round"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Output Section -->
+    <div class="section-header">
+      <div class="section-title-label">Generated password</div>
+      <hr class="separator">
+    </div>
+
+    <div class="password-display-container">
+      <div id="password-display" class="password-display" role="textbox" aria-readonly="true">Generating...</div>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="actions-container">
+      <button id="btn-copy" class="btn btn-primary">Copy password</button>
+      <button id="btn-refresh" class="btn btn-secondary">Refresh password</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -334,6 +334,18 @@ body {
 }
 
 /* Recent History Section Styling */
+.history-section {
+  display: block;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.history-section.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .history-header-wrapper {
   margin-top: 12px;
 }

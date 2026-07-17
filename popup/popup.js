@@ -205,18 +205,25 @@ function getRelativeTime(timestamp) {
 /**
  * Dynamically renders the password history items in the UI.
  */
+/**
+ * Dynamically renders the password history items in the UI.
+ */
 function renderHistory() {
   const historyList = document.getElementById('history-list');
+  const historySection = document.getElementById('history-section');
   if (!historyList) return;
 
   historyList.innerHTML = '';
 
   if (localHistory.length === 0) {
-    const emptyDiv = document.createElement('div');
-    emptyDiv.className = 'history-empty';
-    emptyDiv.textContent = 'No recent passwords';
-    historyList.appendChild(emptyDiv);
+    if (historySection) {
+      historySection.classList.add('hidden');
+    }
     return;
+  } else {
+    if (historySection) {
+      historySection.classList.remove('hidden');
+    }
   }
 
   localHistory.forEach((item) => {
@@ -297,9 +304,8 @@ function renderHistory() {
 
 /**
  * Reads UI state, generates the password/PIN, and displays it in the DOM.
- * @param {boolean} [skipHistory=false]
  */
-function generateAndDisplay(skipHistory = false) {
+function generateAndDisplay() {
   const slider = document.getElementById('length-slider');
   const toggleNumbers = document.getElementById('toggle-numbers');
   const toggleSymbols = document.getElementById('toggle-symbols');
@@ -316,10 +322,6 @@ function generateAndDisplay(skipHistory = false) {
   }
 
   display.textContent = result;
-
-  if (!skipHistory && result && result !== 'Generating...') {
-    addToHistory(result);
-  }
 }
 
 /**
@@ -342,9 +344,8 @@ function syncSliderAndInput(value) {
  * Switched between Random and PIN password generation modes.
  * @param {'random'|'pin'} type
  * @param {boolean} [skipSave=false]
- * @param {boolean} [skipHistory=false]
  */
-function switchPasswordType(type, skipSave = false, skipHistory = false) {
+function switchPasswordType(type, skipSave = false) {
   const tabRandom = document.getElementById('tab-random');
   const tabPin = document.getElementById('tab-pin');
   const optionsContainer = document.getElementById('options-container');
@@ -382,7 +383,7 @@ function switchPasswordType(type, skipSave = false, skipHistory = false) {
   }
 
   syncSliderAndInput(currentVal);
-  generateAndDisplay(skipHistory);
+  generateAndDisplay();
   if (!skipSave) {
     saveState();
   }
@@ -450,6 +451,8 @@ function copyToClipboard() {
       btnCopy.textContent = 'Copied!';
       btnCopy.style.backgroundColor = '#16a34a'; // Success green background feedback
       
+      addToHistory(text); // Add to history on copy success!
+
       setTimeout(() => {
         btnCopy.textContent = originalText;
         btnCopy.style.backgroundColor = ''; // Reverts back to CSS rule
@@ -481,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadHistory(() => {
       pruneExpiredHistory(true); // Silent prune expired on startup
       renderHistory();
-      switchPasswordType(state.mode, true, true); // skipHistory = true on startup load
+      switchPasswordType(state.mode, true);
     });
   });
 
@@ -529,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnCopy.addEventListener('click', copyToClipboard);
-  btnRefresh.addEventListener('click', () => generateAndDisplay(false)); // Force history log on refresh click
+  btnRefresh.addEventListener('click', () => generateAndDisplay());
   
   if (btnClearHistory) {
     btnClearHistory.addEventListener('click', clearHistory);

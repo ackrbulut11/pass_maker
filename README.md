@@ -14,7 +14,7 @@ A simple Chrome Extension for generating secure random passwords and PINs.
 
 ## Preview
 
-<img src="ss_PassMaker.png" alt="Pass Maker Screenshot" width="300">
+<img src="assets/ss_PassMaker.png" alt="Pass Maker Screenshot" width="320">
 
 ## Installation
 

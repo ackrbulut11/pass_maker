@@ -14,12 +14,12 @@ A simple Chrome Extension for generating secure random passwords and PINs.
 
 ## Preview
 
-![Pass Maker Screenshot](ss_PassMaker.png)
+<img src="ss_PassMaker.png" alt="Pass Maker Screenshot" width="300">
 
 ## Installation
 
 1. Clone this repository.
-2. Open **Chrome** and go to `chrome://extensions/`.
+2. Open **Chrome** and go to `chrome://extensions/`
 3. Enable **Developer mode**.
 4. Click **Load unpacked**.
 5. Select the project folder.

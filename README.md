@@ -7,9 +7,8 @@ A simple Chrome Extension for generating secure random passwords and PINs.
 - Generate random passwords (8 - 32 characters, using CSPRNG with category guarantees)
 - Generate numeric PINs (4 - 24 digits)
 - Customize password length
-- Include or exclude numbers
-- Include or exclude symbols
-- Password strength indicator (calculates cryptographic entropy dynamically)
+- Include or exclude numbers and symbols
+- Password strength indicator 
 - Temporary local history (saves last 3 copied passwords, hides when empty, auto-deletes after 3 minutes)
 - Automatic dark mode support (adapts to browser/system preferences)
 - One-click copy to clipboard

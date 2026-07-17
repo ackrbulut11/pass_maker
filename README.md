@@ -40,4 +40,4 @@ A simple Chrome Extension for generating secure random passwords and PINs.
 
 ## License
 
-MIT
+Apache 2.0
